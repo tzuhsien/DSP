@@ -183,13 +183,19 @@ int main(int argc,char* argv[])
 			CalculatePi(&hmm, pi, gamma);
 			CalculateSigmaGamma(&hmm, sigma_gamma, gamma, seq, len);
 			CalculateSigmaEpsilon(&hmm, sigma_epsilon, epsilon, len);
+			FreeDoubleArray(alpha, hmm.state_num);
+			FreeDoubleArray(beta, hmm.state_num);
+			FreeDoubleArray(gamma, hmm.state_num);
+			FreeThreeArray(epsilon, hmm.state_num, len);
 			N++;
 		}
 		Training(&hmm, pi, sigma_gamma, sigma_epsilon, N);
 		fclose(fp);	
+		FreeDoubleArray(sigma_epsilon, hmm.state_num);
+		FreeDoubleArray(sigma_gamma, hmm.state_num);
 	}
 	fp = open_or_die(argv[4], "w");
-	dumpHMM(fp, &hmm);	
+	dumpHMM(fp, &hmm);
 	fclose(fp);
-	return 0;
+		return 0;
 }
