@@ -152,7 +152,7 @@ void Training(HMM* hmm, double* pi, double** sigma_gamma, double** sigma_epsilon
 
 	for (int i = 0; i < hmm->state_num; i++) {
 		for (int j = 0; j < hmm->observ_num; j++) {
-			hmm->observation[i][j] = sigma_gamma[i][j] / gamma[i];
+			hmm->observation[j][i] = sigma_gamma[i][j] / gamma[i];
 		}
 	}
 }
