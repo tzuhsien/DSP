@@ -1,7 +1,0 @@
-#include <stdio.h>
-#include "hmm.h"
-
-int main(argv,argc*)
-{
-	return 0
-}
