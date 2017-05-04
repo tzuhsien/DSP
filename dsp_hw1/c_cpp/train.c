@@ -112,25 +112,26 @@ void CalculatePi(HMM* hmm, double* pi, double** gamma)
 		pi[i] += gamma[i][0];
 	}
 }
-void CalculateSigmaGamma(HMM* hmm, double** sigma_gamma, double** gamma, char* seq, int len)
+void CalculateSigmaGamma(HMM* hmm, double** sigma_gamma, double** gamma, char* seq, int len, double* sigma_gamma_T)
 {
 	for (int i = 0; i < hmm->state_num; i++) {
 		for (int t = 0; t < len; t++) {
 			sigma_gamma[i][seq[t] - 'A'] += gamma[i][t];
 		}
+		sigma_gamma_T[i] += gamma[i][len - 1];
 	}
 }
 void CalculateSigmaEpsilon(HMM* hmm, double** sigma_epsilon, double*** epsilon, int len)
 {
 	for (int i = 0; i < hmm->state_num; i++) {
 		for (int j = 0; j < hmm->state_num; j++) {
-			for (int t = 0; t < len; t++) {
+			for (int t = 0; t < len - 1; t++) {
 				sigma_epsilon[i][j] += epsilon[t][i][j];
 			}
 		}
 	}
 }
-void Training(HMM* hmm, double* pi, double** sigma_gamma, double** sigma_epsilon, int N) 
+void Training(HMM* hmm, double* pi, double** sigma_gamma, double** sigma_epsilon, int N, double* sigma_gamma_T) 
 {
 	for (int i = 0; i < hmm->state_num; i++) {
 		hmm->initial[i] = pi[i] / (double)N;
@@ -146,7 +147,7 @@ void Training(HMM* hmm, double* pi, double** sigma_gamma, double** sigma_epsilon
 
 	for (int i = 0; i < hmm->state_num; i++) {
 		for (int j = 0; j < hmm->state_num; j++) {
-			hmm->transition[i][j] = sigma_epsilon[i][j] / gamma[i];
+			hmm->transition[i][j] = sigma_epsilon[i][j] / (gamma[i] - sigma_gamma_T[i]);
 		}
 	}
 
@@ -169,6 +170,8 @@ int main(int argc,char* argv[])
 		memset(pi, 0, hmm.state_num * sizeof(double));
 		double** sigma_gamma = CreateDoubleArray(hmm.state_num, hmm.observ_num);
 		double** sigma_epsilon = CreateDoubleArray(hmm.state_num, hmm.state_num);
+		double sigma_gamma_T[hmm.state_num];
+		memset(sigma_gamma_T, 0, hmm.state_num * sizeof(double));
 		int N = 0;
 		while (fscanf(fp, "%s", seq) > 0) {
 			int len = strlen(seq);
@@ -181,7 +184,7 @@ int main(int argc,char* argv[])
 			CalculateGamma(&hmm, gamma, alpha, beta, seq, len);
 			CalculateEpsilon(&hmm, epsilon, alpha, beta, seq, len);
 			CalculatePi(&hmm, pi, gamma);
-			CalculateSigmaGamma(&hmm, sigma_gamma, gamma, seq, len);
+			CalculateSigmaGamma(&hmm, sigma_gamma, gamma, seq, len, sigma_gamma_T);
 			CalculateSigmaEpsilon(&hmm, sigma_epsilon, epsilon, len);
 			FreeDoubleArray(alpha, hmm.state_num);
 			FreeDoubleArray(beta, hmm.state_num);
@@ -189,7 +192,7 @@ int main(int argc,char* argv[])
 			FreeThreeArray(epsilon, hmm.state_num, len);
 			N++;
 		}
-		Training(&hmm, pi, sigma_gamma, sigma_epsilon, N);
+		Training(&hmm, pi, sigma_gamma, sigma_epsilon, N, sigma_gamma_T);
 		fclose(fp);	
 		FreeDoubleArray(sigma_epsilon, hmm.state_num);
 		FreeDoubleArray(sigma_gamma, hmm.state_num);
