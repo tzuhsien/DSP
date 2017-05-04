@@ -1,12 +1,8 @@
 .PHONY: all clean
 
-CFLAGS+=
+CFLAGS+=-std=c99 -O2
 LDFLAGS+=-lm     # link to math library
-
-TARGET=test_hmm
-
+TARGET:train test check
 all: $(TARGET)
-# type make/make all to compile test_hmm
-
 clean:
-	$(RM) $(TARGET)   # type make clean to remove the compiled file
+	rm -rf train test check model_*   # type make clean to remove the compiled file
