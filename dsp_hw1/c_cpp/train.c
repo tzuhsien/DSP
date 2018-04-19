@@ -137,23 +137,23 @@ void Training(HMM* hmm, double* pi, double** sigma_gamma, double** sigma_epsilon
 		hmm->initial[i] = pi[i] / (double)N;
 	}
 
-	double gamma[hmm->state_num];
+	double total_gamma[hmm->state_num];
 	for (int i = 0; i < hmm->state_num; i++) {
-		gamma[i] = 0;
+		total_gamma[i] = 0;
 		for (int j = 0; j < hmm->observ_num; j++) {
-			gamma[i] += sigma_gamma[i][j];
+			total_gamma[i] += sigma_gamma[i][j];
 		}
 	}
 
 	for (int i = 0; i < hmm->state_num; i++) {
 		for (int j = 0; j < hmm->state_num; j++) {
-			hmm->transition[i][j] = sigma_epsilon[i][j] / (gamma[i] - sigma_gamma_T[i]);
+			hmm->transition[i][j] = sigma_epsilon[i][j] / (total_gamma[i] - sigma_gamma_T[i]);
 		}
 	}
 
 	for (int i = 0; i < hmm->state_num; i++) {
 		for (int j = 0; j < hmm->observ_num; j++) {
-			hmm->observation[j][i] = sigma_gamma[i][j] / gamma[i];
+			hmm->observation[j][i] = sigma_gamma[i][j] / total_gamma[i];
 		}
 	}
 }
